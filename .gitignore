@@ -46,3 +46,7 @@ CMakeUserPresets.json
 
 # MacOS
 .DS_Store
+# misc
+build/
+.vscode
+juce_vst3_helper
