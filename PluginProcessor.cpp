@@ -124,7 +124,7 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
-    juce::ignoreUnused (midiMessages);
+    /* juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -151,6 +151,20 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         juce::ignoreUnused (channelData);
         // ..do something to the data...
     }
+        */
+    buffer.clear();
+    juce::MidiBuffer processedMidi;
+    for (const auto metadata : midiMessages) {
+        auto message = metadata.getMessage();
+        const auto time = metadata.samplePosition;
+        if (message.isNoteOn()) {
+            message = juce::MidiMessage::noteOn(message.getChannel(),
+                message.getNoteNumber(),
+                (juce::uint8) noteOnVel);
+        }
+        processedMidi.addEvent(message, time);
+    }
+    midiMessages.swapWith(processedMidi);
 }
 
 //==============================================================================
