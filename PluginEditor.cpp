@@ -8,16 +8,24 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     juce::ignoreUnused (processorRef);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (200, 200);
+    setSize(200, 200);
     
-    midiVolume.setSliderStyle(juce::Slider::LinearBarVertical);
-    midiVolume.setRange(0.0,127.0,1.0);
-    midiVolume.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-    midiVolume.setPopupDisplayEnabled(true,false,this);
-    midiVolume.setTextValueSuffix("/127");
-    midiVolume.setValue(1.0);
-    addAndMakeVisible(&midiVolume);
-    midiVolume.addListener(this);
+    globalGain.setSliderStyle(juce::Slider::LinearBarVertical);
+    globalGain.setRange(0.0,100.0,0.1);
+    globalGain.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+    globalGain.setPopupDisplayEnabled(true,false,this);
+    globalGain.setTextValueSuffix("%");
+    globalGain.setValue(1.0);
+    addAndMakeVisible(&globalGain);
+    globalGain.addListener(this);
+    frequencySlider.setSliderStyle(juce::Slider::LinearBarVertical);
+    frequencySlider.setRange(30.0,10000.0,1.0);
+    frequencySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+    frequencySlider.setPopupDisplayEnabled(true,false,this);
+    frequencySlider.setTextValueSuffix(" hz");
+    frequencySlider.setValue(440.0);
+    addAndMakeVisible(frequencySlider);
+    frequencySlider.addListener(this);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -32,17 +40,23 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText ("_O______", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void AudioPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    midiVolume.setBounds (40, 30, 20, getHeight() - 60);
+    globalGain.setBounds (40, 30, 20, getHeight() - 60);
+    frequencySlider.setBounds(70, 30, 20, getHeight() - 60);
 }
 
 
 void AudioPluginAudioProcessorEditor::sliderValueChanged (juce::Slider* slider) {
-    processorRef.noteOnVel = midiVolume.getValue();
+    if (slider == &globalGain) {
+        processorRef.gain = globalGain.getValue() * 0.01;
+    } else if (slider == &frequencySlider) {
+        processorRef.frequency = frequencySlider.getValue();
+        processorRef.updateAngleDelta();
+    }
 }

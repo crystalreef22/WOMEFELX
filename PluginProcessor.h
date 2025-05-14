@@ -43,9 +43,15 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    float noteOnVel;
+    void updateAngleDelta();
+    double gain = 0.0;
+    double frequency = 440.0;
 
 private:
+    juce::Random random;
+    double currentAngle = 0.0;
+    double angleDelta = 0.0;
+    double currentSampleRate = 0.0;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

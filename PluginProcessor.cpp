@@ -89,6 +89,13 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
+    juce::String message;
+    message << "Preparing to play audio...\n";
+    message << " samplesPerBlock = " << samplesPerBlock << "\n";
+    message << " sampleRate = " << sampleRate;
+    currentSampleRate = sampleRate;
+    updateAngleDelta();
+    juce::Logger::getCurrentLogger()->writeToLog (message);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -121,10 +128,16 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
   #endif
 }
 
+void AudioPluginAudioProcessor::updateAngleDelta()
+{
+    auto cyclesPerSample = frequency / currentSampleRate; // [2]
+    angleDelta = cyclesPerSample * 2.0 * juce::MathConstants<double>::pi; // [3]
+}
+
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
-    /* juce::ignoreUnused (midiMessages);
+    juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -145,26 +158,16 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    for (auto sample = 0; sample < buffer.getNumSamples(); ++sample)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
-    }
-        */
-    buffer.clear();
-    juce::MidiBuffer processedMidi;
-    for (const auto metadata : midiMessages) {
-        auto message = metadata.getMessage();
-        const auto time = metadata.samplePosition;
-        if (message.isNoteOn()) {
-            message = juce::MidiMessage::noteOn(message.getChannel(),
-                message.getNoteNumber(),
-                (juce::uint8) noteOnVel);
+        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+        {
+            auto *channelData = buffer.getWritePointer(channel);
+            channelData[sample] = (float)(std::sin(currentAngle) * gain);
         }
-        processedMidi.addEvent(message, time);
+        currentAngle += angleDelta;
     }
-    midiMessages.swapWith(processedMidi);
+        // ..do something to the data...
 }
 
 //==============================================================================

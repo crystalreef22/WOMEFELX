@@ -44,7 +44,7 @@ juce_add_plugin(Womefelx
     # COMPANY_NAME ...                          # Specify the name of the plugin's author
     IS_SYNTH TRUE                       # Is this a synth or an effect?
     NEEDS_MIDI_INPUT TRUE               # Does the plugin need midi input?
-    NEEDS_MIDI_OUTPUT TRUE              # Does the plugin need midi output? # TODO: remove this once tutorials finished
+    NEEDS_MIDI_OUTPUT FALSE              # Does the plugin need midi output? # TODO: remove this once tutorials finished
     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
     COPY_PLUGIN_AFTER_BUILD TRUE        # Should the plugin be installed to a default location after building?
